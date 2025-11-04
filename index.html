@@ -1,241 +1,104 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Pipeline Status</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <style>
-        :root {
-            --bg-color: #121212;
-            --surface-color: #1e1e1e;
-            --primary-color: #03dac6;
-            --on-surface-color: #e0e0e0;
-            --on-surface-secondary-color: #a0a0a0;
-            --border-color: #333;
-            --success-color: #4CAF50;
-            --error-color: #F44336;
-            --code-bg-color: #282c34;
-            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--on-surface-color);
-            font-family: var(--font-family);
-            margin: 0;
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 900px;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 2rem;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 1.5rem;
-        }
-
-        header h1 {
-            font-size: 2.5rem;
-            color: var(--primary-color);
-            margin: 0 0 0.5rem 0;
-            font-weight: 300;
-        }
-
-        header p {
-            font-size: 1.1rem;
-            color: var(--on-surface-secondary-color);
-            margin: 0;
-        }
-
-        main {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        .pipeline-flow {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .step-card {
-            background-color: var(--surface-color);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .step-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        .step-card .title {
-            display: flex;
-            align-items: center;
-            font-size: 1.2rem;
-            font-weight: 500;
-            margin-bottom: 0.75rem;
-        }
-        
-        .step-card .title svg {
-            width: 24px;
-            height: 24px;
-            margin-right: 0.75rem;
-            fill: var(--primary-color);
-        }
-
-        .step-card .description {
-            font-family: monospace;
-            background-color: var(--code-bg-color);
-            padding: 0.5rem 0.75rem;
-            border-radius: 4px;
-            color: var(--on-surface-color);
-            margin-bottom: 1rem;
-            word-break: break-all;
-        }
-
-        .step-card .status {
-            margin-top: auto;
-            align-self: flex-start;
-            padding: 0.3rem 0.8rem;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            display: inline-block;
-        }
-
-        .status.success {
-            background-color: rgba(76, 175, 80, 0.2);
-            color: var(--success-color);
-        }
-
-        .result-section {
-            background-color: var(--surface-color);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 1.5rem;
-        }
-
-        .result-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-        
-        .result-header h2 {
-            margin: 0;
-            font-size: 1.5rem;
-            font-weight: 400;
-        }
-
-        .result-header #last-updated {
-            font-size: 0.9rem;
-            color: var(--on-surface-secondary-color);
-        }
-
-        .json-output {
-            background-color: var(--code-bg-color);
-            border-radius: 6px;
-            padding: 1rem;
-            max-height: 400px;
-            overflow-y: auto;
-            border: 1px solid var(--border-color);
-        }
-
+        /* Minimal custom styles for JSON syntax highlighting */
         .json-output pre {
             margin: 0;
             white-space: pre-wrap;
             word-wrap: break-word;
         }
-        
         .json-output code {
             font-family: "Fira Code", "Courier New", monospace;
             font-size: 0.9rem;
-            color: #c5c8c6;
         }
-        
         .json-output .string { color: #b5bd68; }
         .json-output .number { color: #de935f; }
         .json-output .boolean { color: #81a2be; }
         .json-output .null { color: #cc6666; }
         .json-output .key { color: #81a2be; }
-        
-        footer {
-            text-align: center;
-            margin-top: 3rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid var(--border-color);
-            width: 100%;
-            max-width: 900px;
-            color: var(--on-surface-secondary-color);
-        }
     </style>
 </head>
+
 <body>
 
-    <div class="container">
-        <header>
-            <h1>Data Pipeline Status</h1>
-            <p>Automated workflow processing project data and publishing results via GitHub Actions.</p>
+    <div class="container-lg py-5">
+        <header class="text-center border-bottom pb-4 mb-5">
+            <h1 class="display-5 fw-light text-primary-emphasis">Data Pipeline Status</h1>
+            <p class="lead text-body-secondary">Automated workflow processing project data and publishing results via GitHub Actions.</p>
         </header>
 
         <main>
-            <div class="pipeline-flow">
-                <div class="step-card">
-                    <div class="title">
-                        <svg viewBox="0 0 24 24"><path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2M11.5 13.5H10V18H11.5V13.5M14.5 13.5H13V18H14.5V13.5M9 11.5C9 12.3 8.3 13 7.5 13H7V12H7.5C7.8 12 8 11.8 8 11.5V10.5C8 10.2 7.8 10 7.5 10H7V9H7.5C8.3 9 9 9.7 9 10.5V11.5M16.5 11.5C16.5 12.3 15.8 13 15 13H14.5V12H15C15.3 12 15.5 11.8 15.5 11.5V10.5C15.5 10.2 15.3 10 15 10H14.5V9H15C15.8 9 16.5 9.7 16.5 10.5V11.5M13 9V3.5L18.5 9H13Z"/></svg>
-                        <span>Data Conversion</span>
+            <div class="row row-cols-1 row-cols-md-3 g-4 mb-5">
+                <!-- Data Conversion Card -->
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex align-items-center mb-3">
+                                <svg class="text-primary flex-shrink-0 me-3" width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2M11.5 13.5H10V18H11.5V13.5M14.5 13.5H13V18H14.5V13.5M9 11.5C9 12.3 8.3 13 7.5 13H7V12H7.5C7.8 12 8 11.8 8 11.5V10.5C8 10.2 7.8 10 7.5 10H7V9H7.5C8.3 9 9 9.7 9 10.5V11.5M16.5 11.5C16.5 12.3 15.8 13 15 13H14.5V12H15C15.3 12 15.5 11.8 15.5 11.5V10.5C15.5 10.2 15.3 10 15 10H14.5V9H15C15.8 9 16.5 9.7 16.5 10.5V11.5M13 9V3.5L18.5 9H13Z"/></svg>
+                                <h5 class="card-title mb-0">Data Conversion</h5>
+                            </div>
+                            <p class="card-text text-body-secondary small">Converts the source Excel file into a CSV format for processing.</p>
+                            <code class="d-block bg-body-tertiary p-2 rounded small my-3">data.xlsx &rarr; data.csv</code>
+                            <div class="mt-auto pt-2">
+                                <span class="badge text-bg-success">Complete</span>
+                            </div>
+                        </div>
                     </div>
-                    <p class="description">data.xlsx &rarr; data.csv</p>
-                    <span class="status success">Complete</span>
                 </div>
-                <div class="step-card">
-                    <div class="title">
-                        <svg viewBox="0 0 24 24"><path d="M14.6,16.6L19.2,12L14.6,7.4L16,6L22,12L16,18L14.6,16.6M9.4,16.6L4.8,12L9.4,7.4L8,6L2,12L8,18L9.4,16.6Z"/></svg>
-                        <span>Processing Script</span>
+                <!-- Processing Script Card -->
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex align-items-center mb-3">
+                                <svg class="text-primary flex-shrink-0 me-3" width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M14.6,16.6L19.2,12L14.6,7.4L16,6L22,12L16,18L14.6,16.6M9.4,16.6L4.8,12L9.4,7.4L8,6L2,12L8,18L9.4,16.6Z"/></svg>
+                                <h5 class="card-title mb-0">Processing Script</h5>
+                            </div>
+                            <p class="card-text text-body-secondary small">Executes the Python script to analyze the data and generate the final output.</p>
+                            <code class="d-block bg-body-tertiary p-2 rounded small my-3">execute.py</code>
+                            <div class="mt-auto pt-2">
+                                <span class="badge text-bg-success">Operational</span>
+                            </div>
+                        </div>
                     </div>
-                    <p class="description">execute.py</p>
-                    <span class="status success">Fixed & Operational</span>
                 </div>
-                <div class="step-card">
-                    <div class="title">
-                        <svg viewBox="0 0 24 24"><path d="M12,16A3,3 0 0,1 9,13A3,3 0 0,1 12,10A3,3 0 0,1 15,13A3,3 0 0,1 12,16M12,12A1,1 0 0,0 11,13A1,1 0 0,0 12,14A1,1 0 0,0 13,13A1,1 0 0,0 12,12M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,10.6 21.6,9.2 20.9,8.1L19.5,9.5C20,10.3 20.3,11.1 20.3,12A8.3,8.3 0 0,1 12,20.3A8.3,8.3 0 0,1 3.7,12A8.3,8.3 0 0,1 12,3.7C12.9,3.7 13.7,4 14.5,4.5L15.9,3.1C14.8,2.4 13.4,2 12,2M20.9,3.1L19.5,4.5C20,5.3 20.3,6.1 20.3,7H22C22,5.6 21.6,4.2 20.9,3.1M17,2.2V4.5H19.3V2.2C18.5,2.1 17.8,2.1 17,2.2M14.5,4.5L15.9,5.9C14.8,6.6 13.4,7 12,7A5,5 0 0,0 7,12C7,13.4 7.4,14.8 8.1,15.9L6.7,17.3C5.4,15.9 4.7,14 4.7,12A7.3,7.3 0 0,1 12,4.7C13,4.7 13.8,5 14.5,5.5L14.5,4.5Z" /></svg>
-                        <span>GitHub Actions</span>
+                <!-- GitHub Actions Card -->
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex align-items-center mb-3">
+                                <svg class="text-primary flex-shrink-0 me-3" width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M12,16A3,3 0 0,1 9,13A3,3 0 0,1 12,10A3,3 0 0,1 15,13A3,3 0 0,1 12,16M12,12A1,1 0 0,0 11,13A1,1 0 0,0 12,14A1,1 0 0,0 13,13A1,1 0 0,0 12,12M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,10.6 21.6,9.2 20.9,8.1L19.5,9.5C20,10.3 20.3,11.1 20.3,12A8.3,8.3 0 0,1 12,20.3A8.3,8.3 0 0,1 3.7,12A8.3,8.3 0 0,1 12,3.7C12.9,3.7 13.7,4 14.5,4.5L15.9,3.1C14.8,2.4 13.4,2 12,2M20.9,3.1L19.5,4.5C20,5.3 20.3,6.1 20.3,7H22C22,5.6 21.6,4.2 20.9,3.1M17,2.2V4.5H19.3V2.2C18.5,2.1 17.8,2.1 17,2.2M14.5,4.5L15.9,5.9C14.8,6.6 13.4,7 12,7A5,5 0 0,0 7,12C7,13.4 7.4,14.8 8.1,15.9L6.7,17.3C5.4,15.9 4.7,14 4.7,12A7.3,7.3 0 0,1 12,4.7C13,4.7 13.8,5 14.5,5.5L14.5,4.5Z" /></svg>
+                                <h5 class="card-title mb-0">GitHub Actions</h5>
+                            </div>
+                            <p class="card-text text-body-secondary small">Automates the entire workflow on a schedule and publishes the results.</p>
+                            <code class="d-block bg-body-tertiary p-2 rounded small my-3">.github/workflows/publish.yml</code>
+                            <div class="mt-auto pt-2">
+                                <span class="badge text-bg-success">Active</span>
+                            </div>
+                        </div>
                     </div>
-                    <p class="description">.github/workflows/publish.yml</p>
-                    <span class="status success">Active & Publishing</span>
                 </div>
             </div>
 
-            <section class="result-section">
-                <div class="result-header">
-                    <h2>Live Output: result.json</h2>
-                    <span id="last-updated"></span>
+            <section class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <h2 class="h4 mb-0">Live Output: result.json</h2>
+                    <small id="last-updated" class="text-body-secondary"></small>
                 </div>
-                <div class="json-output">
-                    <pre><code id="json-content"></code></pre>
+                <div class="card-body">
+                    <div class="json-output bg-body-tertiary p-3 rounded border" style="max-height: 400px; overflow-y: auto;">
+                        <pre><code id="json-content"></code></pre>
+                    </div>
                 </div>
             </section>
         </main>
-        
-        <footer>
+
+        <footer class="text-center text-body-secondary mt-5 pt-4 border-top">
             <p>Published via GitHub Pages.</p>
         </footer>
     </div>
@@ -249,13 +112,13 @@
                 status: "loading",
                 message: "Fetching latest data from server..."
             };
-            
+
             const syntaxHighlight = (json) => {
                 if (typeof json != 'string') {
                     json = JSON.stringify(json, undefined, 2);
                 }
                 json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function(match) {
                     let cls = 'number';
                     if (/^"/.test(match)) {
                         if (/:$/.test(match)) {
@@ -276,13 +139,14 @@
 
             const fetchData = async () => {
                 try {
-                    const response = await fetch('result.json');
+                    // Add cache-busting query parameter
+                    const response = await fetch(`result.json?v=${new Date().getTime()}`);
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     const data = await response.json();
                     jsonContainer.innerHTML = syntaxHighlight(data);
-                    
+
                     const timestamp = data.timestamp || new Date().toISOString();
                     lastUpdatedElem.textContent = `Last Updated: ${new Date(timestamp).toLocaleString()}`;
 
@@ -297,9 +161,11 @@
                     lastUpdatedElem.textContent = `Last Updated: ${new Date().toLocaleString()}`;
                 }
             };
-            
+
             fetchData();
         });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
+
 </html>
